@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,11 +77,15 @@ export default function AdminBlogs() {
   const [editing, setEditing] = useState<Post | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const createFileRef = useRef<HTMLInputElement | null>(null);
+  const editFileRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting }
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -99,10 +103,26 @@ export default function AdminBlogs() {
         status: editing.status,
         image: undefined
       });
+      setSelectedFileName(null);
     } else if (!isCreating) {
       reset({ title: '', content: '', status: 'draft', image: undefined });
+      setSelectedFileName(null);
     }
   }, [editing, isCreating, reset]);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setSelectedFileName(file ? file.name : null);
+    setValue('image', e.target.files ?? undefined);
+  }, [setValue]);
+
+  const clearSelectedFile = useCallback(() => {
+    setSelectedFileName(null);
+    setValue('image', undefined);
+    // Reset the native file input
+    if (createFileRef.current) createFileRef.current.value = '';
+    if (editFileRef.current) editFileRef.current.value = '';
+  }, [setValue]);
 
   const onSubmit = async (values: FormValues) => {
     const form = new FormData();
@@ -125,6 +145,7 @@ export default function AdminBlogs() {
       }
       setEditing(null);
       setIsCreating(false);
+      setSelectedFileName(null);
       reset();
     } catch (err: any) {
       const message = err?.response?.data?.message ?? 'Failed to save post. Please try again.';
@@ -195,10 +216,21 @@ export default function AdminBlogs() {
                   <div className="flex items-center gap-4">
                     <div className="relative flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-ink/20 hover:border-ink/40 hover:bg-white/50">
                       <span className="flex items-center gap-2 text-sm text-ink/60">
-                        <ImageIcon size={16} /> Choose file
+                        <ImageIcon size={16} /> {selectedFileName ?? 'Choose file'}
                       </span>
-                      <Input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" {...register('image')} />
+                      <input
+                        ref={createFileRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleFileChange}
+                      />
                     </div>
+                    {selectedFileName && (
+                      <Button type="button" variant="ghost" size="icon" onClick={clearSelectedFile} className="flex-shrink-0">
+                        <X size={16} />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -272,10 +304,21 @@ export default function AdminBlogs() {
                               <div className="flex items-center gap-4">
                                 <div className="relative flex h-12 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-ink/20 hover:border-ink/40 hover:bg-white/50">
                                   <span className="flex items-center gap-2 text-sm text-ink/60">
-                                    <ImageIcon size={16} /> {imageUrl ? 'Replace image' : 'Choose file'}
+                                    <ImageIcon size={16} /> {selectedFileName ?? (imageUrl ? 'Replace image' : 'Choose file')}
                                   </span>
-                                  <Input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" {...register('image')} />
+                                  <input
+                                    ref={editFileRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    onChange={handleFileChange}
+                                  />
                                 </div>
+                                {selectedFileName && (
+                                  <Button type="button" variant="ghost" size="icon" onClick={clearSelectedFile} className="flex-shrink-0">
+                                    <X size={16} />
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           </div>
