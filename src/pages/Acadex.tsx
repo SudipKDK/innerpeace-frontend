@@ -1,4 +1,3 @@
-import { SectionHeading } from '@/components/SectionHeading';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Award, BookOpen, PenTool, Lightbulb, Heart, ArrowRight } from 'lucide-react';

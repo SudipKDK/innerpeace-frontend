@@ -57,7 +57,7 @@ export default function AdminLogin() {
       await api.post('/auth/forgot-password', { email: values.email });
       setEmailSent(true);
       push({ type: 'success', message: 'Reset link sent! Check your email.' });
-    } catch (err: any) {
+    } catch {
       push({ type: 'error', message: 'Failed to send reset email. Please try again.' });
     }
   };

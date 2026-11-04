@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchMe, login as loginRequest, type User } from '@/api/auth';
 import { clearToken, getToken, setToken } from '@/lib/storage';
@@ -33,18 +33,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [meQuery.isError]);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const result = await loginRequest(email, password);
     setToken(result.access_token);
     setTokenState(result.access_token);
     await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-  };
+  }, [queryClient]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     clearToken();
     setTokenState(null);
     queryClient.removeQueries({ queryKey: ['auth', 'me'] });
-  };
+  }, [queryClient]);
 
   useEffect(() => {
     const syncToken = () => setTokenState(getToken());
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout
     }),
-    [token, meQuery.data, meQuery.isLoading]
+    [token, meQuery.data, meQuery.isLoading, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

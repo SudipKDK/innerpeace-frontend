@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
-import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useJourneys } from '@/features/journey/queries';
 import { resolveMediaUrl } from '@/lib/media';
-import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { Music, BookOpen, Star, Heart, Coffee, Sun } from 'lucide-react';
 

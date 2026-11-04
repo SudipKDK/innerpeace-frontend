@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Pencil, Trash2, Plus, Eye, EyeOff, Youtube, X, Image as ImageIcon } from 'lucide-react';
+import { Pencil, Trash2, Plus, Eye, EyeOff, Youtube, X } from 'lucide-react';
 import { SectionHeading } from '@/components/SectionHeading';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
